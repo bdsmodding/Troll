@@ -1,0 +1,20 @@
+﻿# Visual Studio related
+/.vs
+/CMakeSettings.json
+/out
+
+# Visual Studio Code related
+/.vscode
+
+# Idea related
+/.idea
+/cmake-build-*
+
+# Clangd cache
+/.cache
+
+# XMake
+/.xmake
+/build
+/CMakeLists.txt
+/vsxmake2022
