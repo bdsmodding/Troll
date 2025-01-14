@@ -1,10 +1,8 @@
 #include "HeaderAnalyser.h"
-
 #include "PDBGenerator.h"
-
 #include <iostream>
-#include <string>
 
+#include <string>
 #include <windows.h>
 
 int main(int argc, const char **argv) {
@@ -18,7 +16,7 @@ int main(int argc, const char **argv) {
   if (argc < 5) {
     std::cerr << "Usage: " << argv[0]
               << " <build_directory> <include_header_file> <pe_file_path> "
-                 "<pdb_export_path> <pdb_name>\n";
+                 "<pdb_export_path> <pdb_name> [external_symbol_list]\n";
     return 1;
   }
 
@@ -27,9 +25,11 @@ int main(int argc, const char **argv) {
   std::string pePath = argv[3];
   std::string pathtoexport = argv[4];
   std::string pdbName = argv[5];
+  std::string externalSymbolList = argc > 6 ? argv[6] : "";
 
   HeaderAnalyser analyser;
-  auto rvaMap = analyser.analyze(buildDirectory, headerFile);
+  auto rvaMap =
+      analyser.analyze(buildDirectory, headerFile, externalSymbolList);
 
   PDBGenerator generator;
   if (!generator.generate(pathtoexport + pdbName, rvaMap, pePath)) {

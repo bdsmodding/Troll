@@ -11,5 +11,6 @@ public:
    * @return a map of mangled names to RVAs
    */
   std::unordered_map<std::string, int64_t>
-  analyze(const std::string &buildPath, const std::string &sourceFile);
+  analyze(const std::string &buildPath, const std::string &sourceFile,
+          const std::string &externalSymbolList);
 };

@@ -1,7 +1,5 @@
 #include "HeaderAnalyser.h"
 
-#include "pl/SymbolProvider.h"
-
 #include "clang/AST/ASTConsumer.h"
 #include "clang/AST/ASTContext.h"
 #include "clang/AST/Mangle.h"
@@ -12,17 +10,28 @@
 #include "clang/Tooling/Tooling.h"
 #include "llvm/Support/Path.h"
 
+#include <llvm/DebugInfo/CodeView/SymbolSerializer.h>
+#include <llvm/DebugInfo/MSF/MSFBuilder.h>
+#include <llvm/DebugInfo/PDB/Native/DbiModuleDescriptorBuilder.h>
+#include <llvm/DebugInfo/PDB/Native/DbiStreamBuilder.h>
+#include <llvm/DebugInfo/PDB/Native/InfoStreamBuilder.h>
+#include <llvm/DebugInfo/PDB/Native/RawTypes.h>
+
 #include <mutex>
+#include <windows.h>
+
+#include <fstream>
 #include <unordered_map>
 #include <unordered_set>
 
-#include <windows.h>
+#include "pl/SymbolProvider.h"
 
 using namespace clang;
 using namespace clang::tooling;
 
 static std::unordered_set<std::string> includedFiles;
 static std::unordered_set<std::string> mangledNames;
+static std::unordered_set<std::string> externMangledNames;
 static std::mutex mapMutex;
 
 class FunctionVisitor : public RecursiveASTVisitor<FunctionVisitor> {
@@ -135,11 +144,22 @@ private:
 
 std::unordered_map<std::string, int64_t>
 HeaderAnalyser::analyze(const std::string &buildPath,
-                        const std::string &sourceFile) {
+                        const std::string &sourceFile,
+                        const std::string &externalSymbolList) {
   {
     std::lock_guard<std::mutex> lock(mapMutex);
     includedFiles.clear();
     mangledNames.clear();
+  }
+
+  if (!externalSymbolList.empty()) {
+    std::ifstream file(externalSymbolList);
+    if (file.is_open()) {
+      std::string line;
+      while (std::getline(file, line)) {
+        externMangledNames.emplace(line);
+      }
+    }
   }
 
   std::string errorMessage;
@@ -176,6 +196,17 @@ HeaderAnalyser::analyze(const std::string &buildPath,
   }
 
   llvm::outs() << "Found " << rvaMap.size() << " symbols\n";
+  int counts = rvaMap.size();
+  {
+    for (const auto &mangledName : externMangledNames) {
+      auto res = pl::symbol_provider::pl_resolve_symbol_silent_n(
+          mangledName.data(), mangledName.size());
+      if (res) {
+        rvaMap[mangledName] = reinterpret_cast<uintptr_t>(res) - moduleBase;
+      }
+    }
+  }
+  llvm::outs() << "Found " << rvaMap.size() - counts << " old symbols\n";
 
   return rvaMap;
 }
