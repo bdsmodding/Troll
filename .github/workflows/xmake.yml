@@ -1,0 +1,41 @@
+on: [push, release]
+
+jobs:
+  compile:
+    runs-on: windows-latest
+    name: Compile project
+    steps:
+      - 
+        name: Checkout
+        uses: actions/checkout@v4
+      - 
+        name: Setup xmake
+        uses: xmake-io/github-action-setup-xmake@v1
+      - 
+        name: Compile
+        run: xmake repo -u -y && xmake f -m release -y && xmake -y
+      - 
+        name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifact
+          path: build/windows/x64/release/
+
+  ship-it:
+    needs: compile
+    if: github.event_name == 'release'
+    permissions: write-all
+    runs-on: ubuntu-latest
+    name: Ship it
+    steps:
+      - 
+        name: Download artifact
+        uses: actions/download-artifact@v4
+      - 
+        name: Create release
+        run: zip -r release.zip artifact
+      - 
+        name: Upload release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release.zip
