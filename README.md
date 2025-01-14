@@ -35,7 +35,32 @@ Use indicates acceptance. Non-compliance requires immediate cessation. Violation
 
 ## Usage
 
-Just run Troll.py and enjoy.
+- Automatic:
+
+    Just run Troll.py and enjoy.
+
+    ```log
+    usage: Troll.py [-h] [-e EXT_SYMBOL_LIST] [-d WORK_DIR]
+
+    Troll script
+
+    options:
+    -h, --help            show this help message and exit
+    -e EXT_SYMBOL_LIST, --ext-symbol-list EXT_SYMBOL_LIST
+                            External symbol list file path
+    -d WORK_DIR, --work-dir WORK_DIR
+                            Work directory
+    ```
+
+- Manual:
+
+    ```cmd
+    Troll.exe <build_directory> <include_header_file> <pe_file_path> <pdb_export_path> <pdb_name> [external_symbol_list]
+    ```
+
+    The last argument is optional, and it is a file of external symbols that you want to dump. The list should be separated by a newline.
+
+    Maybe you can dump external symbols from a old version of the game.
 
 ## Troubleshooting
 

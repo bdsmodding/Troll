@@ -6,8 +6,9 @@ import zipfile
 import logging
 import time
 import shutil
+import argparse
 
-WORK_DIR = "./work"
+work_dir = "./work"
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
@@ -19,10 +20,10 @@ def del_rw(action, name, exc):
 
 
 def try_cd_to_work_dir():
-    if os.path.exists(WORK_DIR):
-        shutil.rmtree(WORK_DIR, onerror=del_rw)
-    os.makedirs(WORK_DIR, exist_ok=True)
-    os.chdir(WORK_DIR)
+    if os.path.exists(work_dir):
+        shutil.rmtree(work_dir, onerror=del_rw)
+    os.makedirs(work_dir, exist_ok=True)
+    os.chdir(work_dir)
 
 
 def check_command(command):
@@ -69,6 +70,24 @@ def get_latest_server_release():
 
 
 def main():
+    parser = argparse.ArgumentParser(description='Troll script')
+    parser.add_argument('-e', '--ext-symbol-list', default=None,
+                        help='External symbol list file path')
+    parser.add_argument('-d', '--work-dir',
+                        default='./work', help='Work directory')
+    args = parser.parse_args()
+
+    global work_dir
+    work_dir = args.work_dir
+
+    external_symbol_list = args.ext_symbol_list
+    if external_symbol_list:
+        if not os.path.exists(external_symbol_list):
+            logging.error(
+                f"External symbol list file not found: {external_symbol_list}")
+            return
+        external_symbol_list = os.path.abspath(external_symbol_list)
+
     if not check_command('git'):
         logging.error("Git not found, please install Git.")
         return
@@ -80,13 +99,13 @@ def main():
     try_cd_to_work_dir()
 
     logging.info("Cloning the repository...")
-    subprocess.run(['git', 'clone', '-b', 'header', 'https://github.com/LiteLDev/LeviLamina.git'],
-                   stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    subprocess.run(['git', 'clone', '-b', 'header',
+                   'https://github.com/LiteLDev/LeviLamina.git'], shell=True)
     os.chdir('LeviLamina')
 
     logging.info("Running xmake project...")
     subprocess.run(['xmake', 'project', '-y', '-P', '.', '-k', 'compile_commands',
-                   'build'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                   'build'], shell=True)
 
     downloads = [
         ("https://github.com/bdsmodding/Troll/releases/latest/download/Troll.exe", "Troll.exe"),
@@ -131,8 +150,14 @@ def main():
         pass
 
     logging.info("Running Troll.exe...")
-    subprocess.run(['Troll.exe', 'build', 'test/include_all.h', 'bedrock_server.exe', './', 'Troll.pdb'],
-                   stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+    troll_args = ['Troll.exe', 'build', 'test/include_all.h',
+                  'bedrock_server.exe', './', 'Troll.pdb']
+
+    if external_symbol_list:
+        troll_args.append(external_symbol_list)
+
+    subprocess.run(troll_args, shell=True)
 
     logging.info(f'PDB generated at {os.path.abspath("Troll.pdb")}')
 
