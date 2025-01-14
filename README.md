@@ -33,13 +33,9 @@ Use indicates acceptance. Non-compliance requires immediate cessation. Violation
 
 *By following these rules, you support our sustainable development.*
 
-## Install
-
-*TODO*
-
 ## Usage
 
-*TODO*
+Just run Troll.py and enjoy.
 
 ## Troubleshooting
 
