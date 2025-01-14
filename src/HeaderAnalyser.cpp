@@ -10,21 +10,14 @@
 #include "clang/Tooling/Tooling.h"
 #include "llvm/Support/Path.h"
 
-#include <llvm/DebugInfo/CodeView/SymbolSerializer.h>
-#include <llvm/DebugInfo/MSF/MSFBuilder.h>
-#include <llvm/DebugInfo/PDB/Native/DbiModuleDescriptorBuilder.h>
-#include <llvm/DebugInfo/PDB/Native/DbiStreamBuilder.h>
-#include <llvm/DebugInfo/PDB/Native/InfoStreamBuilder.h>
-#include <llvm/DebugInfo/PDB/Native/RawTypes.h>
-
-#include <mutex>
-#include <windows.h>
+#include "pl/SymbolProvider.h"
 
 #include <fstream>
+#include <mutex>
 #include <unordered_map>
 #include <unordered_set>
 
-#include "pl/SymbolProvider.h"
+#include <windows.h>
 
 using namespace clang;
 using namespace clang::tooling;

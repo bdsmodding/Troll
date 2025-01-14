@@ -1,8 +1,9 @@
 #include "HeaderAnalyser.h"
 #include "PDBGenerator.h"
-#include <iostream>
 
+#include <iostream>
 #include <string>
+
 #include <windows.h>
 
 int main(int argc, const char **argv) {
